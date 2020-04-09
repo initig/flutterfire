@@ -11,15 +11,16 @@ class OAuthProvider {
   final String providerId;
 
   /// Creates an [OAuthCredential] for the OAuth 2 provider with the provided parameters.
-  OAuthCredential getCredential({
-    @required String idToken,
-    String accessToken,
-    String rawNonce,
-  }) {
+  OAuthCredential getCredential(
+      {@required String idToken,
+      String accessToken,
+      String rawNonce,
+      String pendingToken}) {
     return PlatformOAuthCredential(
         providerId: providerId,
         idToken: idToken,
         accessToken: accessToken,
-        rawNonce: rawNonce);
+        rawNonce: rawNonce,
+        pendingToken: pendingToken);
   }
 }

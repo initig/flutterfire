@@ -173,8 +173,9 @@ class PlatformOAuthCredential extends OAuthCredential {
       {@required String providerId,
       @required String idToken,
       String accessToken,
-      String rawNonce})
-      : super(providerId, idToken, accessToken, rawNonce);
+      String rawNonce,
+      String pendingToken})
+      : super(providerId, idToken, accessToken, rawNonce, pendingToken);
 }
 
 /// Abstract class to implement [OAuthCredential] authentications
@@ -191,12 +192,15 @@ abstract class OAuthCredential extends AuthCredential {
   /// The OAuth raw nonce.
   final String providerId;
 
+  final String pendingToken;
+
   const OAuthCredential(
     this.providerId,
     this.idToken,
     this.accessToken,
-    this.rawNonce,
-  ) : super(providerId);
+    this.rawNonce, [
+    this.pendingToken,
+  ]) : super(providerId);
 
   @override
   Map<String, String> _asMap() => <String, String>{
@@ -204,6 +208,7 @@ abstract class OAuthCredential extends AuthCredential {
         'accessToken': accessToken,
         'providerId': providerId,
         'rawNonce': rawNonce,
+        'pendingToken': pendingToken,
       };
 }
 

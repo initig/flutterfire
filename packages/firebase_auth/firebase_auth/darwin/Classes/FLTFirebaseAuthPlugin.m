@@ -449,9 +449,16 @@ int nextHandle = 0;
 
 - (void)sendResult:(FlutterResult)result forObject:(NSObject *)object error:(NSError *)error {
   if (error != nil) {
+    NSDictionary<NSErrorUserInfoKey, id> *details = nil;
+      id credential = [error userInfo][FIRAuthErrorUserInfoUpdatedCredentialKey];
+    if (credential != nil && [credential isKindOfClass:FIROAuthCredential.class]) {
+        details = @{
+            FIRAuthErrorUserInfoUpdatedCredentialKey: [self getCredentialDictionary:credential]
+        };
+    }
     result([FlutterError errorWithCode:getFlutterErrorCode(error)
                                message:error.localizedDescription
-                               details:nil]);
+                               details:details]);
   } else if (object == nil) {
     result(nil);
   } else {
@@ -512,12 +519,17 @@ int nextHandle = 0;
   }
 #endif
   else if ([provider length] != 0 && data[@"idToken"] != (id)[NSNull null] &&
-           (data[@"accessToken"] != (id)[NSNull null] | data[@"rawNonce"] != (id)[NSNull null])) {
+           (data[@"accessToken"] != (id)[NSNull null] | data[@"rawNonce"] != (id)[NSNull null] | data[@"pendingToken"] != (id)[NSNull null])) {
     NSString *idToken = data[@"idToken"];
     NSString *accessToken = data[@"accessToken"];
     NSString *rawNonce = data[@"rawNonce"];
+    NSString *pendingToken = data[@"pendingToken"];
 
-    if (accessToken != (id)[NSNull null] && rawNonce != (id)[NSNull null] &&
+    if (pendingToken != (id)[NSNull null]) {
+          credential = [FIROAuthProvider credentialWithProviderID:provider
+                                                          IDToken:idToken
+                                                     pendingToken:pendingToken];
+    } else if (accessToken != (id)[NSNull null] && rawNonce != (id)[NSNull null] &&
         [accessToken length] != 0 && [rawNonce length] != 0) {
       credential = [FIROAuthProvider credentialWithProviderID:provider
                                                       IDToken:idToken
@@ -540,5 +552,11 @@ int nextHandle = 0;
     NSLog(@"Support for an auth provider with identifier '%@' is not implemented.", provider);
   }
   return credential;
+}
+
+- (NSDictionary *)getCredentialDictionary:(FIROAuthCredential *)credential {
+    return [credential dictionaryWithValuesForKeys: @[
+        @"provider", @"IDToken", @"rawNonce", @"accessToken", @"pendingToken", @"secret"
+    ]];
 }
 @end
